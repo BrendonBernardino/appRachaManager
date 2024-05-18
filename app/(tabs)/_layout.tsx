@@ -1,9 +1,17 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import {TouchableOpacity} from 'react-native';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import * as Animatable from 'react-native-animatable';
+
+import IconCampo from 'react-native-vector-icons/MaterialCommunityIcons';
+import IconDado from 'react-native-vector-icons/Ionicons';
+import IconMoeda from 'react-native-vector-icons/FontAwesome5';
+// import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+
+// import CampoIcon from '../../assets/icons/soccer.svg';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -11,24 +19,41 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        // tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        // tabBarActiveBackgroundColor: '#1A291A',
         headerShown: false,
+        tabBarShowLabel: false,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+              <IconCampo name="soccer-field" 
+              size={40}
+              color={focused ? '#4E9F3D' : color}
+              />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="sorteio"
         options={{
-          title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+              <IconDado name="dice" 
+                size={40}
+                color={focused ? '#4E9F3D' : color}
+              />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="finance"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+              <IconMoeda name="coins" 
+                size={35}
+                color={focused ? '#4E9F3D' : color}
+              />
           ),
         }}
       />
