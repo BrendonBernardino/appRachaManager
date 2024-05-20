@@ -19,6 +19,14 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarStyle: {
+          height: 70,
+          paddingHorizontal: 5,
+          paddingTop: 0,
+          backgroundColor: '#1A291A',
+          position: 'absolute',
+          borderTopWidth: 0,
+      },
         // tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         // tabBarActiveBackgroundColor: '#1A291A',
         headerShown: false,
