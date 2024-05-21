@@ -183,8 +183,8 @@ export default function HomeScreen() {
             </TouchableHighlight>
           <ThemedText type="title" style={styles.title}>Racha</ThemedText>
           <ThemedView style={styles.topsubModule}>
-            <ThemedText type="subtitle" style={styles.subtitle}>Total Ativos: {numPlayers}</ThemedText>
-            <ThemedText type="subtitle" style={styles.subtitle}>Jogadores/Time: 5</ThemedText>
+            <ThemedText type="subtitle" style={[styles.subtitle, {fontWeight: 'bold'}]}>Total Ativos: {numPlayers}</ThemedText>
+            <ThemedText type="subtitle" style={[styles.subtitle, {fontWeight: 'bold'}]}>Jogadores/Time: 5</ThemedText>
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.middleModule}>
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topModule: {
-    flex: 0.3,
+    flex: 0.25,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
@@ -303,7 +303,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     width: '100%',
     backgroundColor: '#191A19',
-    // gap: 8,
   },
   botModule: {
     flex: 1,
@@ -311,16 +310,15 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
     backgroundColor: '#191A19',
-    // gap: 8,
   },
   title: {
     flex: 1,
     alignItems: 'flex-start',
     justifyContent: 'center',
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 70,
     color: '#4E9F3D',
-    fontSize: 70,
+    fontSize: 50,
     // backgroundColor:'pink',
     fontWeight: 'bold'
   },
@@ -371,7 +369,7 @@ const styles = StyleSheet.create({
   },
   itemTextPay: {
     flex: 1,
-    color: '#E8DFCA',
+    color: '#6B6B6B',
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
