@@ -111,40 +111,24 @@ export default function TabTwoScreen() {
   
     if (quantidadeTimes > 0) {
       const nomesSorteadosTeam1 = sortearNomes(nomesRestantes, 5);
-      // setTeamData({
-      //   ...teamData,
-      //   team1: nomesSorteadosTeam1
-      // });
       teamData.team1 = nomesSorteadosTeam1;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam1.includes(nome));
     }
   
     if (quantidadeTimes > 1) {
       const nomesSorteadosTeam2 = sortearNomes(nomesRestantes, 5);
-      // setTeamData({
-      //   ...teamData,
-      //   team2: nomesSorteadosTeam2
-      // });
       teamData.team2 = nomesSorteadosTeam2;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam2.includes(nome));
     }
   
     if (quantidadeTimes > 2) {
       const nomesSorteadosTeam3 = sortearNomes(nomesRestantes, 5);
-      // setTeamData({
-      //   ...teamData,
-      //   team3: nomesSorteadosTeam3
-      // });
       teamData.team3 = nomesSorteadosTeam3;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam3.includes(nome));
     }
   
     if (quantidadeTimes > 3) {
       const nomesSorteadosTeam4 = sortearNomes(nomesRestantes, 5);
-      // setTeamData({
-      //   ...teamData,
-      //   team4: nomesSorteadosTeam4
-      // });
       teamData.team4 = nomesSorteadosTeam4;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam4.includes(nome));
     }
@@ -169,6 +153,7 @@ export default function TabTwoScreen() {
         <View style={styles.botRow}>
             <ShirtIcon name="shirt" 
               size={70}
+              color={'#363333'}
               // style={styles.iconRestart}
             />
           <View>
