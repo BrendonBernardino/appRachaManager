@@ -332,7 +332,6 @@ export default function HomeScreen() {
           <ThemedText type="title" style={styles.title}>Racha</ThemedText>
           <ThemedView style={styles.topsubModule}>
             <ThemedText type="subtitle" style={[styles.subtitle, {fontWeight: 'bold'}]}>Total Ativos: {numPlayers}</ThemedText>
-            <ThemedText type="subtitle" style={[styles.subtitle, {fontWeight: 'bold'}]}>Jogadores/Time: 5</ThemedText>
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.middleModule}>

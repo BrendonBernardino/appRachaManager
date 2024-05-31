@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ShirtIcon from 'react-native-vector-icons/Ionicons';
@@ -42,6 +42,9 @@ export default function TabTwoScreen() {
   });
   const [nomes, setNomes] = useState<string[]>([]);
   const [sorteio, setSorteio] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [jogadoresPorTime, setJogadoresPorTime] = useState<number>(5);
+
 
   useEffect(() => {
     loadData();
@@ -89,17 +92,9 @@ export default function TabTwoScreen() {
   };
 
   const handleSortear = () => {
-    // loadData();
     const quantidadeNomesAtivos = nomes.length;
-    console.log(`Quantidade de nomes ativos: ${quantidadeNomesAtivos}`);
-    const quantidadeTimes = Math.min(4, quantidadeNomesAtivos / 5); // Max 4 teams
-    console.log('Quantidade de times: ', quantidadeTimes);
+    const quantidadeTimes = Math.min(4, Math.floor(quantidadeNomesAtivos / jogadoresPorTime));
   
-    // if (quantidadeTimes < 1) {
-    //   console.error('Nomes ativos insuficientes para formar um time completo.');
-    //   return;
-    // }
-
     setTeamData({
       team1: [],
       team2: [],
@@ -110,44 +105,65 @@ export default function TabTwoScreen() {
     let nomesRestantes = [...nomes];
   
     if (quantidadeTimes > 0) {
-      const nomesSorteadosTeam1 = sortearNomes(nomesRestantes, 5);
+      const nomesSorteadosTeam1 = sortearNomes(nomesRestantes, jogadoresPorTime);
       teamData.team1 = nomesSorteadosTeam1;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam1.includes(nome));
     }
   
     if (quantidadeTimes > 1) {
-      const nomesSorteadosTeam2 = sortearNomes(nomesRestantes, 5);
+      const nomesSorteadosTeam2 = sortearNomes(nomesRestantes, jogadoresPorTime);
       teamData.team2 = nomesSorteadosTeam2;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam2.includes(nome));
     }
   
     if (quantidadeTimes > 2) {
-      const nomesSorteadosTeam3 = sortearNomes(nomesRestantes, 5);
+      const nomesSorteadosTeam3 = sortearNomes(nomesRestantes, jogadoresPorTime);
       teamData.team3 = nomesSorteadosTeam3;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam3.includes(nome));
     }
   
     if (quantidadeTimes > 3) {
-      const nomesSorteadosTeam4 = sortearNomes(nomesRestantes, 5);
+      const nomesSorteadosTeam4 = sortearNomes(nomesRestantes, jogadoresPorTime);
       teamData.team4 = nomesSorteadosTeam4;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam4.includes(nome));
     }
   
-    setTeamData({ ...teamData }); // Atualizar o state com as alterações
-    // setNomes(nomesRestantes);
-  
+    setTeamData({ ...teamData });
     console.log('Nomes sorteados para team1:', teamData.team1);
     console.log('Nomes sorteados para team2:', teamData.team2);
     console.log('Nomes sorteados para team3:', teamData.team3);
     console.log('Nomes sorteados para team4:', teamData.team4);
-
+  
     nomesRestantes = [];
   };
+
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
+  const handleSelectJogadores = (num: number) => {
+    setJogadoresPorTime(num);
+    toggleModal();
+  };
+
+  const renderJogadoresOption = ({ item }) => (
+    <TouchableOpacity style={styles.modalOption} onPress={() => handleSelectJogadores(item)}>
+      <Text style={styles.modalOptionText}>{item}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.topModule}>
         <ThemedText type="title" style={styles.title}>Sorteio</ThemedText>
+        <View style={styles.row}>
+          <ThemedText type="subtitle" style={[styles.subtitle, {fontWeight: 'bold'}]}>Jogadores/Time: {
+          <TouchableOpacity style={styles.button2} onPress={() => setIsModalVisible(true)}>
+            <Text style={styles.buttonText}>{jogadoresPorTime}</Text>
+          </TouchableOpacity>
+          }</ThemedText>
+        </View>
+        {/* <ThemedText type="subtitle" style={[styles.subtitle, {fontWeight: 'bold'}]}>Jogadores/Time: 5</ThemedText> */}
       </ThemedView>
       <ThemedView style={styles.botModule}>
         <View style={styles.botRow}>
@@ -210,6 +226,36 @@ export default function TabTwoScreen() {
           <Text style={styles.buttonText}>Sortear</Text>
         </TouchableOpacity>
       </ThemedView>
+      <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <ThemedText type="title" style={styles.modalTitle}>Selecione Jogadores/Time</ThemedText>
+              <FlatList
+                data={[3, 4, 5, 6, 7, 8, 9]}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setJogadoresPorTime(item);
+                      setIsModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.modalItemText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.toString()}
+              />
+              <TouchableOpacity style={styles.modalButton} onPress={() => setIsModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
     </SafeAreaView>
   );
 }
@@ -249,11 +295,11 @@ const styles = StyleSheet.create({
     // backgroundColor: 'pink',
   },
   row: {
-    // flex: 1,
-    // width: '100%',
-    // flexDirection: 'row',
-    // alignItems: 'center',
-    // justifyContent: 'space-between',
+    flex: 1,
+    width: '80%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     // paddingTop: 20,
     // paddingLeft: 20,
     // backgroundColor: '#191A19',
@@ -273,6 +319,12 @@ const styles = StyleSheet.create({
   subtitle: {
     color: '#4E9F3D',
   },
+  selectButton: {
+    backgroundColor: '#1A4D2E',
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
   button: {
     backgroundColor: '#1A4D2E',
     padding: 10,
@@ -281,9 +333,58 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignSelf: 'center',
   },
+  button2: {
+    backgroundColor: '#1A4D2E',
+    padding: 10,
+    borderRadius: 15,
+    marginLeft: 20,
+    marginBottom: 20,
+    alignSelf: 'center',
+    fontSize: 5,
+  },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  jogadoresContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  modalItem: {
+    padding: 10,
+    marginVertical: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalItemText: {
+    fontSize: 18,
+  },
+  modalButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#4E9F3D',
+    borderRadius: 5,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
