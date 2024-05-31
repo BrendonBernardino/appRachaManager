@@ -2,6 +2,10 @@ import { SafeAreaView, StyleSheet, TouchableHighlight, TouchableOpacity, FlatLis
 import React, { useState, useEffect } from 'react';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import uuid from 'react-native-uuid';
+// import CheckBox from 'react-native-check-box';
+import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import Toast from 'react-native-toast-message';
+
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconRestart from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -14,42 +18,109 @@ import { ThemedView } from '@/components/ThemedView';
 const STORAGE_KEY = '@player_list';
 const initialData = [];
 
-const PaymentModal = ({ visible, onClose }) => (
-  <Modal
-    animationType="slide"
-    transparent={true}
-    visible={visible}
-    onRequestClose={onClose}
-  >
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
-        <ThemedText style={styles.modalTitle}>Escolha o método de pagamento</ThemedText>
-        <TouchableOpacity style={styles.paymentOption} onPress={() => console.log('Dinheiro')}>
-          <ThemedText style={styles.paymentOptionText}>Dinheiro</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.paymentOption} onPress={() => console.log('Pix')}>
-          <ThemedText style={styles.paymentOptionText}>Pix</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <ThemedText style={styles.closeButtonText}>Fechar</ThemedText>
-        </TouchableOpacity>
+const PaymentModal = ({ visible, onClose, onSelectPayment }) => {
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Pix');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [isOtherAmount, setIsOtherAmount] = useState(false);
+
+  useEffect(() => {
+    setSelectedPaymentMethod('Pix');
+    setPaymentAmount('');
+    setIsOtherAmount(false);
+  }, [visible]);
+
+  const handleConfirmPayment = () => {
+    const amount = isOtherAmount ? paymentAmount : 'Integral';
+    onSelectPayment(selectedPaymentMethod, amount);
+  };
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <ThemedText style={styles.modalTitle}>Escolha o método de pagamento</ThemedText>
+          <BouncyCheckbox
+            size={25}
+            fillColor="#4E9F3D"
+            text="Pix"
+            textStyle={styles.checkboxLabel}
+            isChecked={selectedPaymentMethod === 'Pix'}
+            onPress={() => setSelectedPaymentMethod('Pix')}
+          />
+          <BouncyCheckbox
+            size={25}
+            fillColor="#4E9F3D"
+            text="Dinheiro"
+            textStyle={styles.checkboxLabel}
+            isChecked={selectedPaymentMethod === 'Dinheiro'}
+            onPress={() => setSelectedPaymentMethod('Dinheiro')}
+          />
+          <ThemedText style={styles.modalTitle}>Valor:</ThemedText>
+          <BouncyCheckbox
+            size={25}
+            fillColor="#4E9F3D"
+            text="Integral"
+            textStyle={styles.checkboxLabel}
+            isChecked={!isOtherAmount}
+            onPress={() => setIsOtherAmount(false)}
+          />
+          <BouncyCheckbox
+            size={25}
+            fillColor="#4E9F3D"
+            text="Outro"
+            textStyle={styles.checkboxLabel}
+            isChecked={isOtherAmount}
+            onPress={() => setIsOtherAmount(true)}
+          />
+          {isOtherAmount && (
+            <TextInput
+              style={styles.input}
+              placeholder="Digite o valor"
+              placeholderTextColor="#6B6B6B"
+              cursorColor="#1A4D2E"
+              value={paymentAmount}
+              onChangeText={setPaymentAmount}
+              keyboardType="numeric"
+            />
+          )}
+          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPayment}>
+            <ThemedText style={styles.confirmButtonText}>Confirmar</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <ThemedText style={styles.closeButtonText}>Fechar</ThemedText>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  </Modal>
-);
+    </Modal>
+  );
+};
 
 const sortByName = (data) => {
   return data.sort((a, b) => a.name.localeCompare(b.name));
 };
 
-const RenderItemButton = ({ onPress }) => (
+// const RenderItemButton = ({ onPress, payment }) => (
+//   <TouchableOpacity onPress={onPress} style={styles.itemButton}>
+//     <ThemedText type="subtitle" style={[styles.itemTextPay, payment && { color: 'green' }]}>
+//       {payment ? 'Pago' : 'Pago?'}
+//     </ThemedText>
+//   </TouchableOpacity>
+// );
+
+const RenderItemButton = ({ onPress, payment }) => (
   <TouchableOpacity onPress={onPress} style={styles.itemButton}>
-    <ThemedText type="subtitle" style={styles.itemTextPay}>Pago?</ThemedText>
+    <ThemedText type="subtitle" style={[styles.itemTextPay, payment === 'pago' && { color: '#4E9F3D' }]}>
+      {payment === 'pago' ? 'Pago' : 'Pago?'}
+    </ThemedText>
   </TouchableOpacity>
 );
 
 const renderItem = ({ item, onPayment, onToggleActive, onDelete }) => (
-  // <Swipeable>
   <TouchableOpacity
     style={styles.item}
     onPress={() => onToggleActive(item.id)}
@@ -58,13 +129,13 @@ const renderItem = ({ item, onPayment, onToggleActive, onDelete }) => (
   >
     <ThemedText type="subtitle" style={styles.itemText}>{item.name}</ThemedText>
     <RenderItemButton 
-      onPress={() => onPayment(true)}
+      onPress={() => onPayment(item.id)}
+      payment={item.payment}
     />
     <View style={styles.iconActive}>
-    {item.active && <Icon name="soccer" size={30} color={'#4E9F3D'}/>}
+      {item.active && <Icon name="soccer" size={30} color={'#4E9F3D'}/>}
     </View>
   </TouchableOpacity>
-  // </Swipeable>
 );
 
 export default function HomeScreen() {
@@ -76,6 +147,13 @@ export default function HomeScreen() {
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
+  const [pixPayment, setPixPayment] = useState(0.00);
+  const [dinheiroPayment, setDinheiroPayment] = useState(0.00);
+
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState(0.00);
+  const [paymentType, setPaymentType] = useState('Integral');
+
 
   useEffect(() => {
     console.log("RENDERIZAÇÃO");
@@ -143,12 +221,28 @@ export default function HomeScreen() {
   
   const addItem = () => {
     if (newItemName.trim()) {
-      const newData = [...data, { id: uuid.v4(), name: newItemName, active: false }];
+      const newData = [
+        ...data, 
+        { 
+          id: uuid.v4(), 
+          name: newItemName, 
+          active: false, 
+          payment: 'aguardando', 
+          paymentAmount: 0.0, 
+          paymentMethod: 'none' 
+        }
+      ];
       saveData(newData);
       setNewItemName('');
       setModalVisibleAdd(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Jogador Adicionado',
+        text2: `${newItemName} foi adicionado com sucesso!`,
+      });  
     }
   };
+  
 
   const deleteItem = (id) => {
     setSelectedItem(id);
@@ -167,8 +261,62 @@ export default function HomeScreen() {
     }
   };
 
-  const payment = (boole) => {
+  const payment = (boole, id) => {
+    setSelectedItem(data.find(item => item.id === id));
     setPaymentModalVisible(boole);
+  };
+
+  const handlePaymentSelection = (method, amount, type) => {
+    const newData = data.map(item => {
+      if (item.id === selectedItem.id) {
+        return {
+          ...item,
+          payment: 'pago',
+          paymentMethod: method,
+          paymentAmount: amount
+        };
+      }
+      return item;
+    });
+    saveData(newData);
+    setPaymentModalVisible(false);
+  };
+
+  // const renderItem = ({ item }) => (
+  //   <TouchableOpacity
+  //     style={styles.item}
+  //     onPress={() => toggleActive(item.id)}
+  //     onLongPress={() => deleteItem(item)}
+  //     delayLongPress={500}
+  //   >
+  //     <ThemedText type="subtitle" style={styles.itemText}>{item.name}</ThemedText>
+  //     <RenderItemButton 
+  //       onPress={() => onPayment(item.id)}
+  //       payment={item.payment}
+  //     />
+  //     <View style={styles.iconActive}>
+  //       {item.active && <Icon name="soccer" size={30} color={'#4E9F3D'} />}
+  //     </View>
+  //   </TouchableOpacity>
+  // );
+
+  const handleSelectPayment = (method, amount) => {
+    if (selectedItem !== null) {
+      const newData = data.map(item => {
+        if (item.id === selectedItem) {
+          return { ...item, payment: 'pago', paymentMethod: method, paymentAmount: amount };
+        }
+        return item;
+      });
+      saveData(newData);
+      setPaymentModalVisible(false);
+    }
+  };
+  
+  // Adicione isso na função `HomeScreen` após definir o estado `selectedItem`
+  const handlePayment = (id) => {
+    setSelectedItem(id);
+    setPaymentModalVisible(true);
   };
 
   return (
@@ -195,15 +343,21 @@ export default function HomeScreen() {
         <ThemedView style={styles.botModule}>
           <FlatList
             data={data}
-            renderItem={({ item }) => renderItem({ item, onPayment: payment, onToggleActive: toggleActive, onDelete: deleteItem })}
-            keyExtractor={item => item.id}
+            renderItem={({ item }) => renderItem({ item, onPayment: handlePayment, onToggleActive: toggleActive, onDelete: deleteItem })}
+            keyExtractor={item => item.id.toString()}
             extraData={data}
           />
         </ThemedView>
         <TouchableHighlight style={styles.addButton} onPress={() => setModalVisibleAdd(true)}>
           <Icon name="plus" size={30} color="#fff" />
         </TouchableHighlight>
-        <PaymentModal visible={paymentModalVisible} onClose={() => setPaymentModalVisible(false)} />
+        <PaymentModal
+          visible={paymentModalVisible}
+          onClose={() => setPaymentModalVisible(false)}
+          onSelectPayment={handleSelectPayment}
+          selectedPlayerId={selectedItem?.id} // Passando o ID do jogador selecionado
+        />
+        <Toast />
       </ThemedView>
       <Modal
         animationType="slide"
@@ -222,10 +376,12 @@ export default function HomeScreen() {
               value={newItemName}
               onChangeText={setNewItemName}
             />
-            <View style={styles.modalButtons}>
-              <Button title="Cadastrar" onPress={addItem} />
-              <Button title="Cancelar" color="#6B6B6B" onPress={() => setModalVisibleAdd(false)} />
-            </View>
+            <TouchableOpacity style={styles.confirmButton} onPress={addItem}>
+              <ThemedText style={styles.confirmButtonText}>Cadastrar</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisibleAdd(false)}>
+              <ThemedText style={styles.closeButtonText}>Cancelar</ThemedText>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -459,6 +615,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
   },
+  confirmButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#4E9F3D',
+    borderRadius: 5,
+  },
+  confirmButtonText: {
+    color: '#E8DFCA',
+    fontSize: 18,
+    textAlign: 'center',
+  },
   closeButton: {
     marginTop: 20,
   },
@@ -466,5 +633,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'red',
     textAlign: 'center',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  checkboxLabel: {
+    color: '#E8DFCA',
+    marginVertical: 10,
+    marginLeft: 8,
+    textDecorationLine: 'none'
+  },
+  toastContainer: {
+    backgroundColor: '#4E9F3D',
+  },
+  toastText: {
+    color: '#E8DFCA',
   },
 });
