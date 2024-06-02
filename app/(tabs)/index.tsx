@@ -18,7 +18,7 @@ import { ThemedView } from '@/components/ThemedView';
 const STORAGE_KEY = '@player_list';
 const initialData = [];
 
-const PaymentModal = ({ visible, onClose, onSelectPayment }) => {
+const PaymentModal = ({ visible, onClose, onSelectPayment, onCancelPayment, integral, currentPaymentStatus }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Pix');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [isOtherAmount, setIsOtherAmount] = useState(false);
@@ -30,9 +30,10 @@ const PaymentModal = ({ visible, onClose, onSelectPayment }) => {
   }, [visible]);
 
   const handleConfirmPayment = () => {
-    const amount = isOtherAmount ? paymentAmount : 'Integral';
+    const amount = isOtherAmount ? paymentAmount : integral;
     onSelectPayment(selectedPaymentMethod, amount);
   };
+  
 
   return (
     <Modal
@@ -88,9 +89,14 @@ const PaymentModal = ({ visible, onClose, onSelectPayment }) => {
               keyboardType="numeric"
             />
           )}
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPayment}>
-            <ThemedText style={styles.confirmButtonText}>Confirmar</ThemedText>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPayment}>
+              <ThemedText style={styles.confirmButtonText}>{currentPaymentStatus === 'aguardando' ? 'Confirmar' : 'Confirmar alteração'}</ThemedText>
+            </TouchableOpacity>
+          {currentPaymentStatus === 'pago' && (
+            <TouchableOpacity style={styles.cancelPaymentButton} onPress={onCancelPayment}>
+              <ThemedText style={styles.cancelPaymentButtonText}>Cancelar pagamento</ThemedText>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <ThemedText style={styles.closeButtonText}>Fechar</ThemedText>
           </TouchableOpacity>
@@ -104,18 +110,10 @@ const sortByName = (data) => {
   return data.sort((a, b) => a.name.localeCompare(b.name));
 };
 
-// const RenderItemButton = ({ onPress, payment }) => (
-//   <TouchableOpacity onPress={onPress} style={styles.itemButton}>
-//     <ThemedText type="subtitle" style={[styles.itemTextPay, payment && { color: 'green' }]}>
-//       {payment ? 'Pago' : 'Pago?'}
-//     </ThemedText>
-//   </TouchableOpacity>
-// );
-
 const RenderItemButton = ({ onPress, payment }) => (
   <TouchableOpacity onPress={onPress} style={styles.itemButton}>
     <ThemedText type="subtitle" style={[styles.itemTextPay, payment === 'pago' && { color: '#4E9F3D' }]}>
-      {payment === 'pago' ? 'Pago' : 'Pago?'}
+      {payment === 'pago' ? 'Pago' : 'Pendente'}
     </ThemedText>
   </TouchableOpacity>
 );
@@ -150,6 +148,7 @@ export default function HomeScreen() {
   const [pixPayment, setPixPayment] = useState(0.00);
   const [dinheiroPayment, setDinheiroPayment] = useState(0.00);
 
+  const [integral, setIntegral] = useState(0.00);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState(0.00);
   const [paymentType, setPaymentType] = useState('Integral');
@@ -179,6 +178,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const countActiveUsers = () => {
       const activeUsers = data.filter(item => item.active).length;
+      integralCalc();
       setNumPlayers(activeUsers);
     };
 
@@ -250,10 +250,6 @@ export default function HomeScreen() {
   };
 
   const confirmDeleteItem = () => {
-    // const newData = data.filter(item => item.id !== selectedItem);
-    // deleteData(newData);
-    // setData(newData);
-    // setModalVisibleDelete(false);
     if (selectedItem) {
       deleteData(selectedItem.id);
       setSelectedItem(null);
@@ -261,62 +257,52 @@ export default function HomeScreen() {
     }
   };
 
-  const payment = (boole, id) => {
-    setSelectedItem(data.find(item => item.id === id));
-    setPaymentModalVisible(boole);
-  };
-
-  const handlePaymentSelection = (method, amount, type) => {
-    const newData = data.map(item => {
-      if (item.id === selectedItem.id) {
-        return {
-          ...item,
-          payment: 'pago',
-          paymentMethod: method,
-          paymentAmount: amount
-        };
-      }
-      return item;
-    });
-    saveData(newData);
-    setPaymentModalVisible(false);
-  };
-
-  // const renderItem = ({ item }) => (
-  //   <TouchableOpacity
-  //     style={styles.item}
-  //     onPress={() => toggleActive(item.id)}
-  //     onLongPress={() => deleteItem(item)}
-  //     delayLongPress={500}
-  //   >
-  //     <ThemedText type="subtitle" style={styles.itemText}>{item.name}</ThemedText>
-  //     <RenderItemButton 
-  //       onPress={() => onPayment(item.id)}
-  //       payment={item.payment}
-  //     />
-  //     <View style={styles.iconActive}>
-  //       {item.active && <Icon name="soccer" size={30} color={'#4E9F3D'} />}
-  //     </View>
-  //   </TouchableOpacity>
-  // );
-
   const handleSelectPayment = (method, amount) => {
     if (selectedItem !== null) {
+      const item = data.find(item => item.id === selectedItem);
       const newData = data.map(item => {
         if (item.id === selectedItem) {
-          return { ...item, payment: 'pago', paymentMethod: method, paymentAmount: amount };
+          return { ...item, payment: 'pago', paymentMethod: method, paymentAmount: parseFloat(amount), };
         }
         return item;
       });
       saveData(newData);
       setPaymentModalVisible(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Pagamento Realizado',
+        text2: `${item.name} pagou no ${method}.`,
+      });
     }
   };
   
-  // Adicione isso na função `HomeScreen` após definir o estado `selectedItem`
   const handlePayment = (id) => {
     setSelectedItem(id);
     setPaymentModalVisible(true);
+  };
+
+  const handleCancelPayment = () => {
+    if (selectedItem !== null) {
+      const item = data.find(item => item.id === selectedItem);
+      const newData = data.map(item => {
+        if (item.id === selectedItem) {
+          return { ...item, payment: 'aguardando', paymentMethod: 'none', paymentAmount: 0.0 };
+        }
+        return item;
+      });
+      saveData(newData);
+      setPaymentModalVisible(false);
+      Toast.show({
+        type: 'info',
+        text1: 'Pagamento Cancelado',
+        text2: `O pagamento de ${item.name} foi cancelado.`,
+      });
+    }
+  };
+
+  const integralCalc = () => {
+    //valor do campo / num players ativos
+    setIntegral(140.0/numPlayers);
   };
 
   return (
@@ -354,7 +340,9 @@ export default function HomeScreen() {
           visible={paymentModalVisible}
           onClose={() => setPaymentModalVisible(false)}
           onSelectPayment={handleSelectPayment}
-          selectedPlayerId={selectedItem?.id} // Passando o ID do jogador selecionado
+          onCancelPayment={handleCancelPayment}
+          integral = {integral}
+          currentPaymentStatus={data.find(item => item.id === selectedItem)?.payment}
         />
         <Toast />
       </ThemedView>
@@ -649,5 +637,16 @@ const styles = StyleSheet.create({
   },
   toastText: {
     color: '#E8DFCA',
+  },
+  cancelPaymentButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
+  },
+  cancelPaymentButtonText: {
+    color: '#E8DFCA',
+    fontSize: 18,
+    textAlign: 'center',
   },
 });

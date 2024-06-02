@@ -74,18 +74,6 @@ export default function TabTwoScreen() {
     }
   };
 
-  // const handleSortear = () => {
-  //   console.log(teamData.team1);
-  //   const nomesSorteados = sortearNomes(nomes, 5);
-  //   setTeamData({
-  //     ...teamData,
-  //     team1: nomesSorteados
-  //   });
-  //   console.log('Nomes sorteados:', nomesSorteados);
-  //   console.log('team1:', teamData.team1);
-  //   // Aqui você pode fazer qualquer ação com os nomes sorteados, como mostrá-los na interface ou salvá-los em algum lugar.
-  // };
-
   const sortear = async () => {
     setSorteio(!sorteio);
     await loadData();
@@ -93,46 +81,48 @@ export default function TabTwoScreen() {
 
   const handleSortear = () => {
     const quantidadeNomesAtivos = nomes.length;
-    const quantidadeTimes = Math.min(4, Math.floor(quantidadeNomesAtivos / jogadoresPorTime));
-  
-    setTeamData({
+    const quantidadeTimes = Math.min(4, quantidadeNomesAtivos / jogadoresPorTime);
+    // console.log('quantidade de times: ', quantidadeTimes)
+
+    const novoTeamData: TeamData = {
       team1: [],
       team2: [],
       team3: [],
       team4: [],
-    });
+    };
   
     let nomesRestantes = [...nomes];
   
     if (quantidadeTimes > 0) {
       const nomesSorteadosTeam1 = sortearNomes(nomesRestantes, jogadoresPorTime);
-      teamData.team1 = nomesSorteadosTeam1;
+      novoTeamData.team1 = nomesSorteadosTeam1;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam1.includes(nome));
     }
   
     if (quantidadeTimes > 1) {
       const nomesSorteadosTeam2 = sortearNomes(nomesRestantes, jogadoresPorTime);
-      teamData.team2 = nomesSorteadosTeam2;
+      novoTeamData.team2 = nomesSorteadosTeam2;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam2.includes(nome));
     }
   
     if (quantidadeTimes > 2) {
       const nomesSorteadosTeam3 = sortearNomes(nomesRestantes, jogadoresPorTime);
-      teamData.team3 = nomesSorteadosTeam3;
+      novoTeamData.team3 = nomesSorteadosTeam3;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam3.includes(nome));
     }
   
     if (quantidadeTimes > 3) {
       const nomesSorteadosTeam4 = sortearNomes(nomesRestantes, jogadoresPorTime);
-      teamData.team4 = nomesSorteadosTeam4;
+      novoTeamData.team4 = nomesSorteadosTeam4;
       nomesRestantes = nomesRestantes.filter(nome => !nomesSorteadosTeam4.includes(nome));
     }
-  
-    setTeamData({ ...teamData });
-    console.log('Nomes sorteados para team1:', teamData.team1);
-    console.log('Nomes sorteados para team2:', teamData.team2);
-    console.log('Nomes sorteados para team3:', teamData.team3);
-    console.log('Nomes sorteados para team4:', teamData.team4);
+
+    setTeamData(novoTeamData);
+    console.log('Nomes sorteados para team1:', novoTeamData.team1);
+    console.log('Nomes sorteados para team2:', novoTeamData.team2);
+    console.log('Nomes sorteados para team3:', novoTeamData.team3);
+    console.log('Nomes sorteados para team4:', novoTeamData.team4);
+    // console.log('Restantes:', nomesRestantes);
   
     nomesRestantes = [];
   };
@@ -146,11 +136,11 @@ export default function TabTwoScreen() {
     toggleModal();
   };
 
-  const renderJogadoresOption = ({ item }) => (
-    <TouchableOpacity style={styles.modalOption} onPress={() => handleSelectJogadores(item)}>
-      <Text style={styles.modalOptionText}>{item}</Text>
-    </TouchableOpacity>
-  );
+  // const renderJogadoresOption = ({ item }) => (
+  //   <TouchableOpacity style={styles.modalOption} onPress={() => handleSelectJogadores(item)}>
+  //     <Text style={styles.modalOptionText}>{item}</Text>
+  //   </TouchableOpacity>
+  // );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -234,15 +224,16 @@ export default function TabTwoScreen() {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <ThemedText type="title" style={styles.modalTitle}>Selecione Jogadores/Time</ThemedText>
+              <ThemedText type="title" style={styles.modalTitle}>Selecione o número de jogadores por time</ThemedText>
               <FlatList
                 data={[3, 4, 5, 6, 7, 8, 9]}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => {
-                      setJogadoresPorTime(item);
-                      setIsModalVisible(false);
+                      // setJogadoresPorTime(item);
+                      // setIsModalVisible(false);
+                      handleSelectJogadores(item);
                     }}
                   >
                     <Text style={styles.modalItemText}>{item}</Text>
@@ -358,13 +349,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: 300,
+    width: 350,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#191A19',
     borderRadius: 10,
     alignItems: 'center',
   },
   modalTitle: {
+    color: '#E8DFCA',
     fontSize: 20,
     marginBottom: 20,
   },
@@ -375,6 +367,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalItemText: {
+    color: '#E8DFCA',
     fontSize: 18,
   },
   modalButton: {
